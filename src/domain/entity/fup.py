@@ -7,5 +7,5 @@ class FollowUp(BaseModel):
     fupid: str
     fupgenid: str
     date: datetime
-    metadata: dict[str, str] = {}
+    data: dict[str, str] = {}
     responses: list[tuple[str, dict[str, str]]]  # (channel, response)

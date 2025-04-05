@@ -32,7 +32,7 @@ class runTask(UseCase):
                     fupid=id,
                     fupgenid=fupg.id,
                     date=date,
-                    metadata=fupg.metadata,
+                    data=fupg.data,
                     responses=[(channel, {}) for channel in fupg.channel],
                 )
                 fups.append(fup)

@@ -14,7 +14,7 @@ class FupGenInput(BaseModel):
     active: bool
     channel: list[str]
     msg: str | Callable[[dict[str, Any]], str]
-    metadata: dict[str, Any] = {}
+    data: dict[str, Any] = {}
     description: str | None = None
 
 
@@ -29,7 +29,7 @@ class FollowupGenerator(FupGenInput, FupGenOutput):
     @property
     def get_msg(self) -> str | Callable[[dict[str, Any]], str]:
         if callable(self.msg):
-            return self.msg(self.metadata)
+            return self.msg(self.data)
         return self.msg
 
     @model_serializer(mode="plain")

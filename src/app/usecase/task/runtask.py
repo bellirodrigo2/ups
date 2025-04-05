@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Callable
 
+from app.gateway.sendgateway import SendGateway
 from app.repository.fupgenrepo import FupGenRepository
 from app.usecase.fup.readfupgen import FupReadConfig, ReadFupGenerator
 from app.usecase.usecase import UseCase

@@ -37,4 +37,4 @@ class RecurrenceConfig(BaseModel):
         return self
 
 
-RecurrenceFactory = Callable[[RecurrenceConfig], Recurrence]
+recurrenceFactory = Callable[[RecurrenceConfig], Recurrence]

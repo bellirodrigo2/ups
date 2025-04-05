@@ -6,9 +6,10 @@ from app.usecase.usecase import UseCase
 from domain.entity.fupgen import FollowupGenerator
 
 
+@dataclass
 class FupReadConfig:
     hookid: str | None = None
-    owner: str | None = None
+    ownerid: str | None = None
     name: str | None = None
     active: bool | None = None
     channel: str | None = None
@@ -17,10 +18,10 @@ class FupReadConfig:
 
 
 @dataclass
-class RedFupGenerator(UseCase):
+class ReadFupGenerator(UseCase):
     fup_gen_repo: FupGenRepository
 
     def execute(
-        self, owner: str, fupg_config: FupReadConfig
+        self, owner: str, fupg_config: FupReadConfig | None = None
     ) -> list[FollowupGenerator]:
-        return []
+        return self.fup_gen_repo.read_fupgen()

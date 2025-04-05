@@ -1,8 +1,11 @@
 from datetime import datetime
 
+from pydantic import BaseModel
 
-class FollowUp:
+
+class FollowUp(BaseModel):
     fupid: str
+    fupgenid: str
     date: datetime
     metadata: dict[str, str] = {}
-    chaNNEL
+    responses: list[tuple[str, dict[str, str]]]  # (channel, response)

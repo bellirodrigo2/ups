@@ -8,11 +8,11 @@ from domain.entity.recurrence import RecurrenceConfig
 
 class FupGenInput(BaseModel):
     hookid: str
-    owner: str
+    ownerid: str
     name: str
     recurrence: RecurrenceConfig
     active: bool
-    channel: str
+    channel: list[str]
     msg: str | Callable[[dict[str, Any]], str]
     metadata: dict[str, Any] = {}
     description: str | None = None
@@ -24,6 +24,7 @@ class FupGenOutput(BaseModel):
 
 
 class FollowupGenerator(FupGenInput, FupGenOutput):
+    last_run: datetime
 
     @property
     def get_msg(self) -> str | Callable[[dict[str, Any]], str]:

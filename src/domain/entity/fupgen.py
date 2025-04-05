@@ -6,17 +6,24 @@ from pydantic import BaseModel, model_serializer
 from domain.entity.recurrence import RecurrenceConfig
 
 
-class FollowupGenerator(BaseModel):
-    id: str
+class FupGenInput(BaseModel):
     hookid: str
-    name: str
     owner: str
+    name: str
     recurrence: RecurrenceConfig
-    created_at: datetime
     active: bool
     channel: str
     msg: str | Callable[[dict[str, Any]], str]
     metadata: dict[str, Any] = {}
+    description: str | None = None
+
+
+class FupGenOutput(BaseModel):
+    id: str
+    created_at: datetime
+
+
+class FollowupGenerator(FupGenInput, FupGenOutput):
 
     @property
     def get_msg(self) -> str | Callable[[dict[str, Any]], str]:

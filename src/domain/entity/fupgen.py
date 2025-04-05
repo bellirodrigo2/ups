@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
 from pydantic import BaseModel, model_serializer
 
@@ -13,7 +13,7 @@ class FupGenInput(BaseModel):
     recurrence: RecurrenceConfig
     active: bool
     channel: list[str]
-    msg: str | Callable[[dict[str, Any]], str]
+    msg: str #| Callable[[dict[str, Any]], str]
     data: dict[str, Any] = {}
     description: str | None = None
 
@@ -26,17 +26,17 @@ class FupGenOutput(BaseModel):
 class FollowupGenerator(FupGenInput, FupGenOutput):
     last_run: datetime
 
-    @property
-    def get_msg(self) -> str | Callable[[dict[str, Any]], str]:
-        if callable(self.msg):
-            return self.msg(self.data)
-        return self.msg
+    # @property
+    # def get_msg(self) -> str | Callable[[dict[str, Any]], str]:
+    #     if callable(self.msg):
+    #         return self.msg(self.data)
+    #     return self.msg
 
-    @model_serializer(mode="plain")
-    def serialize(self) -> dict[str, Any]:
-        data = self.__dict__.copy()
-        data["msg"] = self.get_msg
-        return data
+    # @model_serializer(mode="plain")
+    # def serialize(self) -> dict[str, Any]:
+    #     data = self.__dict__.copy()
+    #     data["msg"] = self.get_msg
+    #     return data
 
 
 if __name__ == "__main__":

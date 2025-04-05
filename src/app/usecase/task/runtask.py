@@ -34,6 +34,7 @@ class RunTask(UseCase):
                     fupid=id,
                     fupgenid=fupg.id,
                     date=date,
+                    msg=fupg.msg,
                     data=fupg.data,
                     responses=[(channel, {}) for channel in fupg.channel],
                 )

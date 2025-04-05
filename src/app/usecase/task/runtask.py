@@ -7,11 +7,12 @@ from app.repository.fupgenrepo import FupGenRepository
 from app.usecase.fup.readfupgen import FupReadConfig, ReadFupGenerator
 from app.usecase.usecase import UseCase
 from domain.entity.fup import FollowUp
+from domain.entity.fupgen import FollowupGenerator
 from domain.entity.recurrence import recurrenceFactory
 
 
 @dataclass
-class runTask(UseCase):
+class RunTask(UseCase):
     readfupgen: ReadFupGenerator
     fup_gen_repo: FupGenRepository
     sendgateway: SendGateway
@@ -20,7 +21,7 @@ class runTask(UseCase):
 
     def execute(self, ownerid: str) -> Any:
 
-        fupgens = self.readfupgen.execute(ownerid, FupReadConfig(active=True))
+        fupgens: list[FollowupGenerator] = self.readfupgen.execute(ownerid, FupReadConfig(active=True))
         now = datetime.now()
 
         fups: list[FollowUp] = []

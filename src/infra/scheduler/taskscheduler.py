@@ -8,7 +8,7 @@ from domain.entity.recurrence import Recurrence
 
 class TaskScheduler(Protocol):
 
-    def add_task(self, task_id: str, recurrence: Recurrence, coro: Callable[[str], Any]) -> None: ...
+    def add_task(self, task_id: str, recurrence: Recurrence, coro: Callable[..., Any]) -> None: ...
 
     def remove_task(self, task_id: str) -> None: ...
 
@@ -26,7 +26,7 @@ class AsyncioTaskScheduler:
     recurrene_dict: dict[str, Recurrence] = field(default_factory=dict)
     running: bool = False
 
-    def add_task(self, task_id: str, recurrence: Recurrence, coro: Callable[[str], Awaitable[None]]) -> None:
+    def add_task(self, task_id: str, recurrence: Recurrence, coro: Callable[..., Any]) -> None:
         stop_event = asyncio.Event()
         self.stop_signals[task_id] = stop_event
 

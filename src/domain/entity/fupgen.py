@@ -13,7 +13,7 @@ class FupGenInput(BaseModel):
     recurrence: RecurrenceConfig
     active: bool
     channel: list[str]
-    msg: str #| Callable[[dict[str, Any]], str]
+    msg: str  # | Callable[[dict[str, Any]], str]
     data: dict[str, Any] = {}
     description: str | None = None
 

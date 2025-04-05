@@ -8,7 +8,7 @@ class FollowUp(BaseModel):
     fupid: str
     fupgenid: str
     date: datetime
-    msg:str
+    msg: str
     data: dict[str, str]
     responses: list[tuple[str, Any]]  # (channel, response)
 
@@ -16,5 +16,3 @@ class FollowUp(BaseModel):
         for resp in self.responses:
             if resp[0] == channel:
                 resp[1].update(response)
-                
-        

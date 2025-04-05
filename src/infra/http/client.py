@@ -61,7 +61,7 @@ class RequestsResponse(ResponseInterface):
 
 class HTTPRequest(Protocol):
 
-    def get(self, url:str) -> ResponseInterface: ...
+    def get(self, url: str) -> ResponseInterface: ...
 
     def get_many(self, urls: list[str], n: int) -> Iterable[ResponseInterface]: ...
 
@@ -77,8 +77,10 @@ class AsyncRequest(HTTPRequest):
     async def _get(self, session: aiohttp.ClientSession, url):
         async with session.get(url) as response:
             return response
-        
-    async def _post(self, session: aiohttp.ClientSession, url: str, data: dict[str,Any]):
+
+    async def _post(
+        self, session: aiohttp.ClientSession, url: str, data: dict[str, Any]
+    ):
         async with session.post(url, json=data) as response:
             return response
 
@@ -121,13 +123,12 @@ class SyncRequest(HTTPRequest):
                     yield [self._get(session, url) for url in li]
                 except Exception as e:
                     yield li
-    
 
-    def _post(self, session: requests.Session, url: str, data: dict[str,Any]):
+    def _post(self, session: requests.Session, url: str, data: dict[str, Any]):
         response = session.post(url, json=data)
         return response
 
-    def post(self, url: str, data: dict[str,Any]) -> ResponseInterface:
+    def post(self, url: str, data: dict[str, Any]) -> ResponseInterface:
         with requests.Session() as session:
             response = self._post(session, url, data)
             return RequestsResponse(response)

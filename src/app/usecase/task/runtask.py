@@ -21,7 +21,9 @@ class RunTask(UseCase):
 
     def execute(self, ownerid: str) -> Any:
 
-        fupgens: list[FollowupGenerator] = self.readfupgen.execute(ownerid, FupReadConfig(active=True))
+        fupgens: list[FollowupGenerator] = self.readfupgen.execute(
+            ownerid, FupReadConfig(active=True)
+        )
         now = datetime.now()
 
         fups: list[FollowUp] = []

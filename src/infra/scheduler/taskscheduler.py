@@ -8,7 +8,9 @@ from domain.entity.recurrence import Recurrence
 
 class TaskScheduler(Protocol):
 
-    def add_task(self, task_id: str, recurrence: Recurrence, coro: Callable[..., Any]) -> None: ...
+    def add_task(
+        self, task_id: str, recurrence: Recurrence, coro: Callable[..., Any]
+    ) -> None: ...
 
     def remove_task(self, task_id: str) -> None: ...
 
@@ -26,7 +28,9 @@ class AsyncioTaskScheduler:
     recurrene_dict: dict[str, Recurrence] = field(default_factory=dict)
     running: bool = False
 
-    def add_task(self, task_id: str, recurrence: Recurrence, coro: Callable[..., Any]) -> None:
+    def add_task(
+        self, task_id: str, recurrence: Recurrence, coro: Callable[..., Any]
+    ) -> None:
         stop_event = asyncio.Event()
         self.stop_signals[task_id] = stop_event
 
@@ -69,10 +73,10 @@ class AsyncioTaskScheduler:
 
     def get_config(self, task_id: str) -> Recurrence | None:
         return self.recurrene_dict.get(task_id, None)
-    
+
     def set_config(self, task_id: str, recurrence: Recurrence):
         if task_id not in self.recurrene_dict:
-            raise Exception(f'Task: {task_id} do not exist.')
+            raise Exception(f"Task: {task_id} do not exist.")
 
     async def start(self) -> None:
         self.running = True

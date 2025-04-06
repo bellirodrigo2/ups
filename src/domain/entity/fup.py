@@ -14,11 +14,11 @@ class FollowUp(BaseModel):
     # data: dict[str, str]
     responses: dict[Channel, Any]
 
-    def update_response(self, id:str, response:Any):
+    def update_response(self, name: str, response: Any):
 
-        channel = next((ch for ch in self.responses if ch.id == id), None)
-        
+        channel = next((ch for ch in self.responses if ch.name == name), None)
+
         if channel:
             self.responses[channel] = response
         else:
-            raise ValueError(f"Channel '{id}'' not found in responses")
+            raise ValueError(f"Channel '{name}'' not found in responses")

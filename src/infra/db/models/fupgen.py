@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from infra.db.models.base import Base, JSONEncoded
 from infra.db.models.recurrenceconfig import RecurrenceConfigModel
 
+
 class FollowupGeneratorModel(Base):
     __tablename__ = "fup_generators"
 
@@ -21,7 +22,7 @@ class FollowupGeneratorModel(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSONEncoded)
 
     created_at: Mapped[datetime]
-    last_run: Mapped[datetime] 
+    last_run: Mapped[datetime]
 
     recurrence_config: Mapped["RecurrenceConfigModel"] = relationship(
         "RecurrenceConfigModel",

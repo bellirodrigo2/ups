@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Iterator, Sequence
 
-from dateutil.rrule import (DAILY, FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY,
-                            YEARLY)
+from dateutil.rrule import DAILY, FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, YEARLY
 from dateutil.rrule import rrule as RRuleType
 
 from domain.entity.recurrence import Recurrence, RecurrenceConfig

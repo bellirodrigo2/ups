@@ -1,11 +1,11 @@
-import asyncio
-from dataclasses import dataclass
-from typing import Any, Iterable, Protocol
+from dataclasses import dataclass, field
+from typing import Any, Iterable, Protocol, runtime_checkable
 
 import aiohttp
 import requests
 
 
+@runtime_checkable
 class ResponseInterface(Protocol):
     @property
     def status_code(self) -> int: ...
@@ -19,23 +19,26 @@ class ResponseInterface(Protocol):
 
 @dataclass
 class AiohttpResponse(ResponseInterface):
-    _response: aiohttp.ClientResponse
+    status: int
+    text: str
+    content: bytes
+    url: str
 
     @property
     def status_code(self) -> int:
-        return self._response.status
+        return self.status
 
     @property
-    async def response(self) -> str:  # type: ignore
-        return await self._response.text()  # type: ignore
+    async def response(self) -> str:
+        return self.text
 
     @property
-    async def content(self) -> bytes:  # type: ignore
-        return await self._response.read()  # type: ignore
+    async def content(self) -> bytes:
+        return self.content
 
     @property
     def url(self) -> str:
-        return str(self._response.url)
+        return self.url
 
 
 @dataclass
@@ -60,112 +63,104 @@ class RequestsResponse(ResponseInterface):
 
 
 class HTTPRequest(Protocol):
-
     def get(self, url: str) -> ResponseInterface: ...
-
     def get_many(self, urls: list[str], n: int) -> Iterable[ResponseInterface]: ...
-
     def post(self, url: str, data: dict[str, Any]) -> ResponseInterface: ...
+    def put(self, url: str, data: dict[str, Any]) -> ResponseInterface: ...
+    def patch(self, url: str, data: dict[str, Any]) -> ResponseInterface: ...
+    def delete(self, url: str) -> ResponseInterface: ...
+    def head(self, url: str) -> ResponseInterface: ...
 
 
 def sublist(lista: list[Any], n: int):
     return [lista[i : i + n] for i in range(0, len(lista), n)]
 
 
+@dataclass
 class AsyncRequest(HTTPRequest):
+    session: aiohttp.ClientSession = field(default_factory=aiohttp.ClientSession)
 
-    async def _get(self, session: aiohttp.ClientSession, url):
-        async with session.get(url) as response:
-            return response
+    async def __aenter__(self):
+        return self
 
-    async def _post(
-        self, session: aiohttp.ClientSession, url: str, data: dict[str, Any]
-    ):
-        async with session.post(url, json=data) as response:
-            return response
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.session.close()
 
-    async def get(self, url):
-        async with aiohttp.ClientSession() as session:
-            return self._get(session, url)
+    async def _request(
+        self, method: str, url: str, data: dict[str, Any] | None = None
+    ) -> ResponseInterface:
+        request_fn = getattr(self.session, method)
+        async with request_fn(url, json=data if data else None) as response:
+            text = await response.text()
+            content = await response.read()
+            return AiohttpResponse(
+                status=response.status,
+                text=text,
+                content=content,
+                url=str(response.url),
+            )
+
+    async def get(self, url: str) -> ResponseInterface:
+        return await self._request("get", url)
 
     async def get_many(self, urls: list[str], n: int):
-
         lists = sublist(urls, n)
-        async with aiohttp.ClientSession() as session:
-            for li in lists:
-                try:
-                    tarefas = [self._get(session, url) for url in li]
-                    yield await asyncio.gather(*tarefas)
-                except Exception as e:
-                    yield li
+        for li in lists:
+            try:
+                tasks = [self._request("get", url) for url in li]
+                yield await asyncio.gather(*tasks)
+            except Exception:
+                yield li
 
     async def post(self, url: str, data: dict[str, Any]) -> ResponseInterface:
-        async with aiohttp.ClientSession() as session:
-            response = await self._post(session, url, data)
-            return AiohttpResponse(response)
+        return await self._request("post", url, data)
+
+    async def put(self, url: str, data: dict[str, Any]) -> ResponseInterface:
+        return await self._request("put", url, data)
+
+    async def patch(self, url: str, data: dict[str, Any]) -> ResponseInterface:
+        return await self._request("patch", url, data)
+
+    async def delete(self, url: str) -> ResponseInterface:
+        return await self._request("delete", url)
+
+    async def head(self, url: str) -> ResponseInterface:
+        return await self._request("head", url)
 
 
+@dataclass
 class SyncRequest(HTTPRequest):
+    session: requests.Session = field(default_factory=requests.Session)
 
-    def _get(self, session: requests.Session, url: str):
-        response = session.get(url)
-        return response
+    def _request(
+        self, method: str, url: str, data: dict[str, Any] | None = None
+    ) -> ResponseInterface:
+        request_fn = getattr(self.session, method)
+        response = request_fn(url, json=data if data else None)
+        return RequestsResponse(response)
 
-    def get(self, url: str):
-        with requests.Session() as session:
-            return self._get(session, url)
+    def get(self, url: str) -> ResponseInterface:
+        return self._request("get", url)
 
     def get_many(self, urls: list[str], n: int):
         lists = sublist(urls, n)
-        with requests.Session() as session:
-            for li in lists:
-                try:
-                    yield [self._get(session, url) for url in li]
-                except Exception as e:
-                    yield li
-
-    def _post(self, session: requests.Session, url: str, data: dict[str, Any]):
-        response = session.post(url, json=data)
-        return response
+        for li in lists:
+            try:
+                yield [self._request("get", url) for url in li]
+            except Exception:
+                yield li
 
     def post(self, url: str, data: dict[str, Any]) -> ResponseInterface:
-        with requests.Session() as session:
-            response = self._post(session, url, data)
-            return RequestsResponse(response)
+        return self._request("post", url, data)
 
+    def put(self, url: str, data: dict[str, Any]) -> ResponseInterface:
+        return self._request("put", url, data)
 
-if __name__ == "__main__":
-    ...
+    def patch(self, url: str, data: dict[str, Any]) -> ResponseInterface:
+        return self._request("patch", url, data)
 
-    # async def batch_request(urls: list[str], n: int):
-#     async def async_batch_request(urls: list[str], n: int):
+    def delete(self, url: str) -> ResponseInterface:
+        return self._request("delete", url)
 
-#         def sublist(lista: list[Any], n: int):
-#             return [lista[i : i + n] for i in range(0, len(lista), n)]
-
-#         async def httprequest(session: aiohttp.ClientSession, url: str):
-#             async with session.get(url) as response:
-#                 return response
-
-#         lists = sublist(urls, n)
-
-#         req_ok: list[aiohttp.ClientResponse] = []
-#         req_error: list[aiohttp.ClientResponse] = []
-#         fails: list[tuple[Exception, list[str]]] = []
-#         async with aiohttp.ClientSession() as session:
-#             for li in lists:
-#                 try:
-#                     tarefas = [httprequest(session, url) for url in li]
-
-#                     resultados = await asyncio.gather(*tarefas)
-
-#                     oks = [resp for resp in resultados if resp.status == 200]
-#                     errors = [resp for resp in resultados if resp.status != 200]
-
-#                     req_ok.extend(oks)
-#                     req_error.extend(errors)
-#                 except Exception as e:
-#                     fails.append((e, li))
-#         return req_ok, req_error, fails
-
-#     return await async_batch_request(urls, n)
+    def head(self, url: str) -> ResponseInterface:
+        return self._request("head", url)

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 
 from pydantic import BaseModel
 
@@ -16,7 +15,6 @@ class FupGenReadConfig(BaseModel):
     # datahas: dict[str, Any] | None = None
     description: str | None = None
 
-channel input com type:str e data como json_str
 
 class FupGenInput(BaseModel):
     hookid: str

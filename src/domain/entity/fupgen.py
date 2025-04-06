@@ -3,6 +3,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from domain.entity.channel import Channel
 from domain.entity.recurrence import RecurrenceConfig
 
 
@@ -23,7 +24,7 @@ class FupGenInput(BaseModel):
     name: str
     recurrence: RecurrenceConfig
     active: bool
-    channel: list[str]
+    channel: list[Channel]
     msg: str  # | Callable[[dict[str, Any]], str]
     data: dict[str, Any] = {}
     description: str | None = None

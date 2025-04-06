@@ -41,7 +41,7 @@ class RunTask(UseCase):
                     date=date,
                     msg=fupg.msg,
                     data=fupg.data,
-                    responses=[(channel, {}) for channel in fupg.channel],
+                    responses={ch: {} for ch in fupg.channel},
                 )
                 fups.append(fup)
 

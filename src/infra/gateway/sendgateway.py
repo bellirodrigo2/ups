@@ -25,9 +25,8 @@ class SendGatewayFiltered(SendGatewayInterface):
 
     def send(self, fups: list[FollowUp]) -> None:
 
-        filtered_fups = [
-            fup for fup in fups if self.channel in [resp[0] for resp in fup.responses]
-        ]
+        filtered_fups = [fup for fup in fups if any(channel.type == self.channel for channel in fup.responses)]
+
         self._send(filtered_fups)
 
 

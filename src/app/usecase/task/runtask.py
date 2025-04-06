@@ -5,7 +5,6 @@ from typing import Any, Callable
 from app.gateway.sendgateway import SendGateway
 from app.repository.fupgenrepo import FupGenRepository
 from app.repository.fuprepo import FupRepository
-from app.usecase import fup
 from app.usecase.fup.readfupgen import ReadFupGenerator
 from domain.entity.fupgen import FupGenReadConfig
 from app.usecase.usecase import UseCase

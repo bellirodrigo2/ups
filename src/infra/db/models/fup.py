@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from infra.db.models.base import Base, JSONDict, JSONList
+from infra.db.models.base import Base, JSONList
 from infra.db.models.fupgen import FollowupGeneratorModel
 
 
@@ -14,7 +14,6 @@ class FollowUpModel(Base):
     fupgenid: Mapped[str] = mapped_column(String, ForeignKey("fup_generators.id"))
     date: Mapped[datetime]
 
-    data: Mapped[dict[str, str]] = mapped_column(JSONDict, default={})
     responses: Mapped[list[tuple[str, dict[str, str]]]] = mapped_column(
         JSONList, default=[]
     )

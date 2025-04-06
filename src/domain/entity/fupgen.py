@@ -1,9 +1,20 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, model_serializer
+from pydantic import BaseModel
 
 from domain.entity.recurrence import RecurrenceConfig
+
+
+class FupGenReadConfig(BaseModel):
+    hookid: str | None = None
+    ownerid: str | None = None
+    name: str | None = None
+    active: bool | None = None
+    channel: str | None = None
+    datahas: dict[str, Any] | None = None
+    description: str | None = None
+
 
 
 class FupGenInput(BaseModel):

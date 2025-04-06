@@ -4,7 +4,10 @@ from typing import Any, Callable
 
 from app.gateway.sendgateway import SendGateway
 from app.repository.fupgenrepo import FupGenRepository
-from app.usecase.fup.readfupgen import FupReadConfig, ReadFupGenerator
+from app.repository.fuprepo import FupRepository
+from app.usecase import fup
+from app.usecase.fup.readfupgen import ReadFupGenerator
+from domain.entity.fupgen import FupGenReadConfig
 from app.usecase.usecase import UseCase
 from domain.entity.fup import FollowUp
 from domain.entity.fupgen import FollowupGenerator
@@ -15,6 +18,7 @@ from domain.entity.recurrence import recurrenceFactory
 class RunTask(UseCase):
     readfupgen: ReadFupGenerator
     fup_gen_repo: FupGenRepository
+    fuprepo: FupRepository
     sendgateway: SendGateway
     makeid: Callable[[], str]
     factory: recurrenceFactory
@@ -22,7 +26,7 @@ class RunTask(UseCase):
     def execute(self, ownerid: str) -> Any:
 
         fupgens: list[FollowupGenerator] = self.readfupgen.execute(
-            ownerid, FupReadConfig(active=True)
+            ownerid, FupGenReadConfig(active=True)
         )
         now = datetime.now()
 

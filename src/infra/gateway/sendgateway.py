@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Any
 
 from app.gateway.sendgateway import SendGateway as SendGatewayInterface

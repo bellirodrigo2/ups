@@ -13,10 +13,10 @@ class FupGenReadConfig(BaseModel):
     name: str | None = None
     active: bool | None = None
     channel: str | None = None
-    datahas: dict[str, Any] | None = None
+    # datahas: dict[str, Any] | None = None
     description: str | None = None
 
-
+channel input com type:str e data como json_str
 
 class FupGenInput(BaseModel):
     hookid: str
@@ -26,7 +26,7 @@ class FupGenInput(BaseModel):
     active: bool
     channel: list[Channel]
     msg: str  # | Callable[[dict[str, Any]], str]
-    data: dict[str, Any] = {}
+    # data: dict[str, Any] = {}
     description: str | None = None
 
 

@@ -11,14 +11,14 @@ class FollowUp(BaseModel):
     fupgenid: str
     date: datetime
     msg: str
-    data: dict[str, str]
+    # data: dict[str, str]
     responses: dict[Channel, Any]
 
-    def update_response(self, chtype:str, response:Any):
+    def update_response(self, id:str, response:Any):
 
-        channel = next((ch for ch in self.responses if ch.type == chtype), None)
+        channel = next((ch for ch in self.responses if ch.id == id), None)
         
         if channel:
             self.responses[channel] = response
         else:
-            raise ValueError(f"Channel {chtype} not found in responses")
+            raise ValueError(f"Channel '{id}'' not found in responses")

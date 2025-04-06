@@ -40,7 +40,7 @@ class RunTask(UseCase):
                     fupgenid=fupg.id,
                     date=date,
                     msg=fupg.msg,
-                    data=fupg.data,
+                    # data=fupg.data,
                     responses={ch: {} for ch in fupg.channel},
                 )
                 fups.append(fup)

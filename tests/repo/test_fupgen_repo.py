@@ -17,3 +17,6 @@ def test_get_fupgen_active(populated_session: Session):
     assert fup.name == "Test FupGen"
     assert fup.msg[0] == "123"
     assert isinstance(fup.channel, list)
+
+    # testar se next_run mudou
+    # testar no test_run_task tbm

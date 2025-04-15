@@ -21,7 +21,9 @@ class FupGen(Base, CreatedAt):
     default_cycle: Mapped[int]
 
     recurrence_id: Mapped[str] = mapped_column(ForeignKey("recurrence.id"), unique=True)
-    recurrence: Mapped["Recurrence"] = relationship()
+    recurrence: Mapped["Recurrence"] = relationship(
+        back_populates="fupgen", uselist=False
+    )
 
     channels: Mapped[List["Channel"]] = relationship(
         back_populates="fupgen", cascade="all, delete-orphan"

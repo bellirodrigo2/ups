@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from infra.db.models.base import Base, json_column
 
@@ -22,3 +22,5 @@ class Recurrence(Base):
     next_run: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     is_exhausted: Mapped[bool] = mapped_column(default=False)
     past_events: Mapped[str] = mapped_column(default="lastonly")
+
+    fupgen: Mapped["FupGen"] = relationship(back_populates="recurrence", uselist=False)

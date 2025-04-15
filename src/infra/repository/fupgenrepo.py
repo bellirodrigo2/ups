@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List, cast
 
+from sqlalchemy.exc import NoResultFound
+
 from app.repository.fupgenrepo import FupGenRepository as IFupGenRepository
 from domain.entity.channel import Channel as DomainChannel
 from domain.entity.fupgen import FollowupGenerator, FupGenInput
@@ -81,4 +83,19 @@ class FupGenRepository(IFupGenRepository):
     def update_config(
         self,
         updates: list[tuple[str, bool, int | None, datetime | None, datetime | None]],
-    ) -> None: ...
+    ) -> None:
+        for fupgen_id, is_exhausted, count, last_run, next_run in updates:
+            try:
+                fupgen = self.db.query(FupGen).filter_by(id=fupgen_id).one()
+            except NoResultFound:
+                # Ignorar ou logar erro
+                continue
+
+            recur = fupgen.recurrence
+            if recur:
+                recur.is_exhausted = is_exhausted
+                recur.count = count
+                recur.last_run = last_run
+                recur.next_run = next_run
+
+        self.db.commit()

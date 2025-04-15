@@ -1,17 +1,17 @@
 from datetime import datetime
 from typing import Protocol
 
-from domain.entity.fupgen import FollowupGenerator, FupGenInput, FupGenReadConfig
-
-# EXCECAP OWNER NAO EVISTE
-# OWNER JA TEM GEN COM MESMO NOME
+from domain.entity.fupgen import FollowupGenerator, FupGenInput
 
 
 class FupGenRepository(Protocol):
     def create(self, id: str, fupgen: FupGenInput) -> datetime: ...
 
-    def search(
-        self, owner: str, config: FupGenReadConfig
+    def get_recur_config(
+        self, ownerid: str, active: bool
     ) -> list[FollowupGenerator]: ...
 
-    def update_lastrun(self, ids: list[str], last_run: datetime) -> None: ...
+    def update_config(
+        self,
+        updates: list[tuple[str, bool, int | None, datetime | None, datetime | None]],
+    ) -> None: ...

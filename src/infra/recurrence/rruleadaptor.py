@@ -51,27 +51,27 @@ def rrule_factory(config: RecurrenceConfig) -> Recurrence:
 
 
 if __name__ == "__main__":
+    ...
+    # config = RecurrenceConfig(
+    #     freq="DAILY",
+    #     dtstart=datetime(2023, 10, 1),
+    #     interval=1,
+    #     count=5,
+    #     byweekday=["MO", "WE", "FR"],
+    # )
+    # recurrence = rrule_factory(config)
 
-    config = RecurrenceConfig(
-        freq="DAILY",
-        dtstart=datetime(2023, 10, 1),
-        interval=1,
-        count=5,
-        byweekday=["MO", "WE", "FR"],
-    )
-    recurrence = rrule_factory(config)
+    # for date in recurrence.take(5):
+    #     print(date)
 
-    for date in recurrence.take(5):
-        print(date)
+    # cfg = RecurrenceConfig(
+    #     freq="WEEKLY",
+    #     dtstart=datetime(2025, 4, 5),
+    #     interval=1,
+    #     byweekday=["MO", "FR"],
+    #     count=4,
+    # )
 
-    cfg = RecurrenceConfig(
-        freq="WEEKLY",
-        dtstart=datetime(2025, 4, 5),
-        interval=1,
-        byweekday=["MO", "FR"],
-        count=4,
-    )
-
-    rec = rrule_factory(cfg)
-    print(rec.take(3))
-    # [2025-04-07, 2025-04-11, 2025-04-14]
+    # rec = rrule_factory(cfg)
+    # print(rec.take(3))
+    # # [2025-04-07, 2025-04-11, 2025-04-14]

@@ -1,24 +1,30 @@
 from datetime import datetime
-from typing import Any
+from typing import Callable
 
 from pydantic import BaseModel
 
-from domain.entity.channel import Channel
+from domain.entity.fupgen import FollowupGenerator
 
 
 class FollowUp(BaseModel):
-    fupid: str
+    # fupid: str
     fupgenid: str
     date: datetime
-    msg: str
-    # data: dict[str, str]
-    responses: dict[Channel, Any]
+    msgid: str
+    dataid: str
 
-    def update_response(self, name: str, response: Any):
 
-        channel = next((ch for ch in self.responses if ch.name == name), None)
-
-        if channel:
-            self.responses[channel] = response
-        else:
-            raise ValueError(f"Channel '{name}'' not found in responses")
+def make_fup(
+    fupgen: FollowupGenerator, ts: datetime
+) -> list[FollowUp]:  # , makeid: Callable[[], str]):
+    dates = fupgen.scheduler.schedule(ts)
+    return [
+        FollowUp(
+            # fupid=makeid(),
+            fupgenid=fupgen.id,
+            date=date,
+            msgid=fupgen.msg[0],
+            dataid=fupgen.data[0],
+        )
+        for date in dates
+    ]

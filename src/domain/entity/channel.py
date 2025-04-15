@@ -4,6 +4,6 @@ from pydantic import BaseModel
 
 
 class Channel(BaseModel):
-    name: str
+    id: str
     type: str
-    data: dict[str, Any]
+    configdata: dict[str, Any]

@@ -1,51 +1,63 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable
 
 from app.gateway.sendgateway import SendGateway
 from app.repository.fupgenrepo import FupGenRepository
 from app.repository.fuprepo import FupRepository
-from app.usecase.fup.readfupgen import ReadFupGenerator
-from domain.entity.fupgen import FupGenReadConfig
 from app.usecase.usecase import UseCase
-from domain.entity.fup import FollowUp
+from domain.entity.fup import FollowUp, make_fup
 from domain.entity.fupgen import FollowupGenerator
-from domain.entity.recurrence import recurrenceFactory
 
 
 @dataclass
 class RunTask(UseCase):
-    readfupgen: ReadFupGenerator
     fup_gen_repo: FupGenRepository
     fuprepo: FupRepository
     sendgateway: SendGateway
-    makeid: Callable[[], str]
-    factory: recurrenceFactory
 
-    def execute(self, ownerid: str) -> Any:
+    async def execute(self, ownerid: str, ts: datetime | None) -> datetime:
 
-        fupgens: list[FollowupGenerator] = self.readfupgen.execute(
-            ownerid, FupGenReadConfig(active=True)
+        fupgens: list[FollowupGenerator] = self.fup_gen_repo.get_recur_config(
+            ownerid=ownerid, active=True
         )
-        now = datetime.now()
+        nexts: dict[str, datetime] = {
+            fupg.hookid: fupg.scheduler.next_run
+            for fupg in fupgens
+            if fupg.scheduler.next_run is not None
+        }
+
+        ts = ts or datetime.now()
 
         fups: list[FollowUp] = []
-        for fupg in fupgens:
-            recurrence = self.factory(fupg.recurrence)
-            dates = recurrence.between(fupg.last_run, now)
-            for date in dates:
-                id = self.makeid()
-                fup = FollowUp(
-                    fupid=id,
-                    fupgenid=fupg.id,
-                    date=date,
-                    msg=fupg.msg,
-                    # data=fupg.data,
-                    responses={ch: {} for ch in fupg.channel},
-                )
-                fups.append(fup)
+        update_recurconf: list[
+            tuple[str, bool, int | None, datetime | None, datetime | None]
+        ] = []
 
-        self.sendgateway.send(fups)
+        for fupgen in fupgens:
 
+            fups.extend(make_fup(fupgen, ts))
+            sch = fupgen.scheduler
+            is_exausted = fupgen.scheduler.is_exhausted(ts)
+
+            if sch.next_run is not None:
+                nexts[fupgen.hookid] = sch.next_run
+
+            update_recurconf.append(
+                (fupgen.id, is_exausted, sch.count, sch.last_run, sch.next_run)
+            )
+
+        # TODO logica aqui para salvar ou nao
         self.fuprepo.add(fups)
-        self.fup_gen_repo.update_lastrun([fupg.id for fupg in fupgens], last_run=now)
+        self.fup_gen_repo.update_config(update_recurconf)
+        # TODO logica aqui para filtrar apenas alguns gateways. ex: apenas console
+        await self.sendgateway.send(fups)
+        # TODO faz asyncio
+        # asyncio.create_task(self.sendgateway.send(fups))
+
+        if nexts:
+            next = min(nexts.values())
+        else:
+            next_delta = min([fupg.default_cycle for fupg in fupgens])
+            next = ts + next_delta
+
+        return next

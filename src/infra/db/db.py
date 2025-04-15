@@ -1,11 +1,9 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.orm.session import Session
 
-from infra.db.models.base import Base
 
-
-def make_session(url: str, base: type[Base]) -> sessionmaker[Session]:
+def make_session(url: str, base: type[DeclarativeBase]) -> sessionmaker[Session]:
     engine = create_engine(url)
 
     base.metadata.create_all(engine)

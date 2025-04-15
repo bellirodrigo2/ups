@@ -1,23 +1,21 @@
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
 
-from infra.db.models.base import Base, JSONList
-from infra.db.models.fupgen import FollowupGeneratorModel
+from infra.db.models.base import Base, CreatedAt
 
 
-class FollowUpModel(Base):
-    __tablename__ = "followups"
+class fup(Base, CreatedAt):
+    __tablename__ = "fup"
 
-    fupid: Mapped[str] = mapped_column(primary_key=True)
-    fupgenid: Mapped[str] = mapped_column(String, ForeignKey("fup_generators.id"))
+    id: Mapped[str] = mapped_column(primary_key=True)
+    fupgenid: Mapped[str] = mapped_column(ForeignKey("fupgen.id"))
+    msgid: Mapped[str] = mapped_column(ForeignKey("fupgen_msg.id"))
+    dataid: Mapped[str] = mapped_column(ForeignKey("fupgen_data.id"))
     date: Mapped[datetime]
 
-    responses: Mapped[list[tuple[str, dict[str, str]]]] = mapped_column(
-        JSONList, default=[]
-    )
-
-    generator: Mapped["FollowupGeneratorModel"] = relationship(
-        "FollowupGeneratorModel", backref="followups"
-    )
+    # se quiser referenciar fupgen
+    # fupgen: Mapped["FupGen"] = relationship()
+    # message: Mapped["Message"] = relationship()
+    # data: Mapped["Data"] = relationship()

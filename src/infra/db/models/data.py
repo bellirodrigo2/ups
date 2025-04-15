@@ -11,6 +11,6 @@ class Data(Base, CreatedAt):
     __tablename__ = "fupgen_data"
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    data: Mapped[dict[str, Any]] = json_column()
+    data: Mapped[dict[str, Any]] = json_column(nullable=False)
 
     fupgen: Mapped["FupGen"] = relationship(back_populates="data", uselist=False)

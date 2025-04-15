@@ -16,6 +16,7 @@ def test_create_fupgen(session: Session):
         interval=1,
         count=10,
         allow_infinite=True,
+        is_exhausted=False,
     )
     session.add(recurrence)
     session.commit()
@@ -53,7 +54,11 @@ def test_read_fupgen(session: Session):
     """Teste de leitura de um FupGen existente."""
     # Inserindo FupGen e dados necessários
     recurrence = Recurrence(
-        id="rec2", freq="daily", dtstart=datetime(2025, 4, 15), interval=1
+        id="rec2",
+        freq="daily",
+        dtstart=datetime(2025, 4, 15),
+        interval=1,
+        is_exhausted=False,
     )
     session.add(recurrence)
     session.commit()
@@ -93,7 +98,11 @@ def test_update_fupgen(session: Session):
     """Teste de atualização de um FupGen existente."""
     # Inserindo FupGen e dados necessários
     recurrence = Recurrence(
-        id="rec3", freq="daily", dtstart=datetime(2025, 4, 15), interval=1
+        id="rec3",
+        freq="daily",
+        dtstart=datetime(2025, 4, 15),
+        interval=1,
+        is_exhausted=False,
     )
     session.add(recurrence)
     session.commit()
@@ -134,7 +143,11 @@ def test_delete_fupgen(session: Session):
     """Teste de remoção de um FupGen existente."""
     # Inserindo FupGen e dados necessários
     recurrence = Recurrence(
-        id="rec4", freq="daily", dtstart=datetime(2025, 4, 15), interval=1
+        id="rec4",
+        freq="daily",
+        dtstart=datetime(2025, 4, 15),
+        interval=1,
+        is_exhausted=False,
     )
     session.add(recurrence)
     session.commit()

@@ -4,7 +4,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from domain.entity.channel import Channel
-from domain.entity.recurrence import RecurrenceConfig, SchedulerProtocol
+from domain.entity.recurrence import RecurrenceConfig, SchedulerManager
 
 
 class FupGenBase(BaseModel):
@@ -24,7 +24,7 @@ class FupGenInput(FupGenBase):
 
 class FollowupGenerator(FupGenBase):
     id: str
-    scheduler: SchedulerProtocol
+    scheduler: SchedulerManager
     msg: tuple[str, str]
     data: tuple[str, dict[str, Any]]
 

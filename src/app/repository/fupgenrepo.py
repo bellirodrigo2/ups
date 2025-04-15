@@ -5,11 +5,9 @@ from domain.entity.fupgen import FollowupGenerator, FupGenInput
 
 
 class FupGenRepository(Protocol):
-    def create(self, id: str, fupgen: FupGenInput) -> datetime: ...
+    def create(self, id: str, fupgen: FupGenInput) -> None: ...
 
-    def get_recur_config(
-        self, ownerid: str, active: bool
-    ) -> list[FollowupGenerator]: ...
+    def get_fupgen(self, ownerid: str, active: bool) -> list[FollowupGenerator]: ...
 
     def update_config(
         self,

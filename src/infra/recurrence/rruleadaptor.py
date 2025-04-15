@@ -1,19 +1,15 @@
-from dataclasses import dataclass
 from datetime import datetime
-from typing import Iterator, Sequence
+from typing import Sequence
 
 from dateutil.rrule import DAILY, FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, YEARLY
 from dateutil.rrule import rrule as RRuleType
+from pydantic import BaseModel
 
 from domain.entity.recurrence import Recurrence, RecurrenceConfig
 
 
-@dataclass
-class RRuleRecurrence(Recurrence):
+class RRuleRecurrence(BaseModel):
     _rule: RRuleType
-
-    def __iter__(self) -> Iterator[datetime]:
-        return iter(self._rule)
 
     def take(self, n: int) -> Sequence[datetime]:
         return [dt for _, dt in zip(range(n), self._rule)]

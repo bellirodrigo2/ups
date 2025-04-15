@@ -11,13 +11,13 @@ from domain.entity.fupgen import FollowupGenerator
 
 @dataclass
 class RunTask(UseCase):
-    fup_gen_repo: FupGenRepository
+    fupgenrepo: FupGenRepository
     fuprepo: FupRepository
     sendgateway: SendGateway
 
     async def execute(self, ownerid: str, ts: datetime | None) -> datetime:
 
-        fupgens: list[FollowupGenerator] = self.fup_gen_repo.get_recur_config(
+        fupgens: list[FollowupGenerator] = self.fupgenrepo.get_fupgen(
             ownerid=ownerid, active=True
         )
         nexts: dict[str, datetime] = {
@@ -48,7 +48,7 @@ class RunTask(UseCase):
 
         # TODO logica aqui para salvar ou nao
         self.fuprepo.add(fups)
-        self.fup_gen_repo.update_config(update_recurconf)
+        self.fupgenrepo.update_config(update_recurconf)
         # TODO logica aqui para filtrar apenas alguns gateways. ex: apenas console
         await self.sendgateway.send(fups)
         # TODO faz asyncio

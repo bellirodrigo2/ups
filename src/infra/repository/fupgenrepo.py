@@ -88,14 +88,13 @@ class FupGenRepository(IFupGenRepository):
             try:
                 fupgen = self.db.query(FupGen).filter_by(id=fupgen_id).one()
             except NoResultFound:
-                # Ignorar ou logar erro
+                # Pode logar: f"FupGen {fupgen_id} não encontrado."
                 continue
 
-            recur = fupgen.recurrence
-            if recur:
-                recur.is_exhausted = is_exhausted
-                recur.count = count
-                recur.last_run = last_run
-                recur.next_run = next_run
+            if fupgen.recurrence:
+                fupgen.recurrence.is_exhausted = is_exhausted
+                fupgen.recurrence.count = count
+                fupgen.recurrence.last_run = last_run
+                fupgen.recurrence.next_run = next_run
 
         self.db.commit()

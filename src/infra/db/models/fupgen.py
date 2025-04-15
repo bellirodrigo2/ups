@@ -16,13 +16,15 @@ class FupGen(Base, CreatedAt):
     id: Mapped[str] = mapped_column(primary_key=True)
     hookid: Mapped[str]
     ownerid: Mapped[str]
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[Optional[str]]
     default_cycle: Mapped[int]
 
-    recurrence_id: Mapped[str] = mapped_column(ForeignKey("recurrence.id"), unique=True)
     recurrence: Mapped["Recurrence"] = relationship(
-        back_populates="fupgen", uselist=False
+        back_populates="fupgen",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     channels: Mapped[List["Channel"]] = relationship(

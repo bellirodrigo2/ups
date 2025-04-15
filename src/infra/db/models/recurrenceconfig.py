@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from infra.db.models.base import Base, json_column
@@ -9,7 +10,7 @@ from infra.db.models.base import Base, json_column
 class Recurrence(Base):
     __tablename__ = "recurrence"
 
-    id: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[str] = mapped_column(ForeignKey("fupgen.id"), primary_key=True)
     freq: Mapped[str]
     dtstart: Mapped[datetime] = mapped_column(nullable=True)
     interval: Mapped[int] = mapped_column(default=1)

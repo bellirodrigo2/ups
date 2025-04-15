@@ -29,8 +29,10 @@ def session(session_local: sessionmaker[Session]) -> Generator[Session, Any, Non
 @pytest.fixture(scope="function")
 def populated_session(session: Session) -> Generator[Session, None, None]:
 
+    id = "id1"
+
     rec = Recurrence(
-        id="rec1",
+        id=id,
         freq="DAILY",
         dtstart=datetime(2025, 4, 15),
         interval=1,
@@ -46,13 +48,12 @@ def populated_session(session: Session) -> Generator[Session, None, None]:
     session.add(data)
 
     fup = FupGen(
-        id="fup1",
+        id=id,
         hookid="hook123",
         ownerid="owner1",
         name="Test FupGen",
         description="Some test description",
         default_cycle=24,
-        recurrence_id=rec.id,
         recurrence=rec,
         message_id=msg.id,
         data_id=data.id,
@@ -71,10 +72,4 @@ def populated_session(session: Session) -> Generator[Session, None, None]:
 
     yield session
 
-    session.execute(text("DROP TABLE IF EXISTS recurrence"))
-    session.execute(text("DROP TABLE IF EXISTS fupgen"))
-    session.execute(text("DROP TABLE IF EXISTS channel"))
-    session.execute(text("DROP TABLE IF EXISTS fupgen_msg"))
-    session.execute(text("DROP TABLE IF EXISTS fupgen_data"))
-
-    session.commit()
+    Base.metadata.drop_all(bind=session.get_bind())

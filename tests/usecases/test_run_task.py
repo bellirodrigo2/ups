@@ -20,12 +20,16 @@ async def test_run_task_executes_correctly(populated_session: Session):
 
     fupgenrepo = FupGenRepository(db=populated_session, make_recurrence=rrule_factory)
 
+    # populated_session.query()
+    # query(FupGen).filter_by(id=fupgen_id).one()
+
     # UseCase
     task = RunTask(
         fupgenrepo=fupgenrepo,
         fuprepo=fuprepo,
         sendgateway=sendgateway,
     )
+
     ts = datetime(2025, 4, 18)
     next_run = await task.execute("owner1", ts)
 

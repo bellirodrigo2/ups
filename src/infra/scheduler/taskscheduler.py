@@ -49,7 +49,7 @@ class AsyncioTaskScheduler:
                     scheduled_time = result
                     self.tasks[task_id].next_run = scheduled_time
                 except Exception as e:
-                    print(f"[{task_id}] Error during task execution: {e}")
+                    # print(f"[{task_id}] Error during task execution: {e}")
                     break
 
         task = asyncio.create_task(_run())
@@ -59,7 +59,7 @@ class AsyncioTaskScheduler:
 
     def remove_task(self, task_id: str) -> None:
         if task_id not in self.tasks:
-            print(f"Tried to remove nonexistent task: {task_id}")
+            # print(f"Tried to remove nonexistent task: {task_id}")
             return
         task_obj = self.tasks[task_id]
         task_obj.event.set()

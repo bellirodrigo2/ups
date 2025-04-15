@@ -8,7 +8,6 @@ from infra.scheduler.taskscheduler import AsyncioTaskScheduler
 
 
 async def my_task(task_id: str) -> Optional[datetime]:
-    print(f"Task {task_id} run on {datetime.now()}.")
     return datetime.now() + timedelta(seconds=3)
 
 

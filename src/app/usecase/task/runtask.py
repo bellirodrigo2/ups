@@ -20,8 +20,9 @@ class RunTask(UseCase):
         fupgens: list[FollowupGenerator] = self.fupgenrepo.get_fupgen(
             ownerid=ownerid, active=True
         )
+
         nexts: dict[str, datetime] = {
-            fupg.hookid: fupg.scheduler.next_run
+            fupg.id: fupg.scheduler.next_run
             for fupg in fupgens
             if fupg.scheduler.next_run is not None
         }
@@ -40,7 +41,7 @@ class RunTask(UseCase):
             is_exausted = fupgen.scheduler.is_exhausted(ts)
 
             if sch.next_run is not None:
-                nexts[fupgen.hookid] = sch.next_run
+                nexts[fupgen.id] = sch.next_run
 
             update_recurconf.append(
                 (fupgen.id, is_exausted, sch.count, sch.last_run, sch.next_run)

@@ -50,6 +50,9 @@ class SchedulerManager(BaseModel):
     _recur: Recurrence = PrivateAttr()
     config: RecurrenceConfig
 
+    def set_recurrence(self, recur: Recurrence):
+        self._recur = recur
+
     @property
     def count(self) -> int | None:
         return self.config.count
@@ -85,7 +88,7 @@ class SchedulerManager(BaseModel):
     def schedule(self, until: datetime) -> list[datetime]:
 
         last_run = self.config.last_run or self.config.dtstart
-        dates = self._recur.between(last_run, until)
+        dates = self._recur.between(last_run, until, inc=True)
 
         if self.config.count is not None:
             self.config.count = max(0, self.config.count - len(dates))
@@ -102,4 +105,7 @@ def make_scheduler(
 ) -> SchedulerManager:
     recur = make_recurrence(config)
 
-    return SchedulerManager(_recur=recur, config=config)
+    schmngr = SchedulerManager(config=config)
+    schmngr.set_recurrence(recur)
+
+    return schmngr

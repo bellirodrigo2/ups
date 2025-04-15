@@ -3,8 +3,10 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.orm.session import Session
 
 
-def make_session(url: str, base: type[DeclarativeBase]) -> sessionmaker[Session]:
-    engine = create_engine(url)
+def make_session(
+    url: str, base: type[DeclarativeBase], echo=False
+) -> sessionmaker[Session]:
+    engine = create_engine(url, echo=echo)
 
     base.metadata.create_all(engine)
 

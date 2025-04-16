@@ -52,7 +52,6 @@ def to_domain(make_recurrence: recurrenceFactory, fup: FupGen) -> FollowupGenera
         name=fup.name,
         channel=channels,
         description=fup.description,
-        default_cycle=timedelta(hours=fup.default_cycle),
         scheduler=scheduler,
         msg=(fup.message.id, fup.message.msg),
         data=(fup.data.id, fup.data.data),

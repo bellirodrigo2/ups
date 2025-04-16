@@ -18,7 +18,6 @@ class FupGen(Base, CreatedAt):
     ownerid: Mapped[str]
     name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[Optional[str]]
-    default_cycle: Mapped[int]
 
     recurrence: Mapped["Recurrence"] = relationship(
         back_populates="fupgen",

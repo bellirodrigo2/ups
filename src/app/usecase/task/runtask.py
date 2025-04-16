@@ -1,5 +1,7 @@
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, field
 from datetime import datetime
+from logging import Logger
 
 from app.gateway.sendgateway import SendGateway
 from app.repository.fupgenrepo import FupGenRepository
@@ -15,11 +17,15 @@ class RunTask(UseCase):
     fuprepo: FupRepository
     sendgateway: SendGateway
 
-    async def execute(self, ownerid: str, ts: datetime | None) -> datetime:
+    logger: Logger = field(default_factory=logging.getLogger)
+
+    async def execute(self, ownerid: str, ts: datetime | None) -> datetime | None:
 
         fupgens: list[FollowupGenerator] = self.fupgenrepo.get_fupgen(
             ownerid=ownerid, active=True
         )
+        self.logger.info(f'FupGen query for "{ownerid}" returned {len(fupgens)} items')
+        self.logger.debug(str(fupgens))
 
         nexts: dict[str, datetime] = {
             fupg.id: fupg.scheduler.next_run
@@ -36,16 +42,25 @@ class RunTask(UseCase):
 
         for fupgen in fupgens:
 
-            fups.extend(make_fup(fupgen, ts))
+            items = make_fup(fupgen, ts)
+            self.logger.info(f'FupGen "{fupgen.id}" generated {len(items)} Fups.')
+            self.logger.debug(str(items))
+            fups.extend(items)
             sch = fupgen.scheduler
             is_exausted = fupgen.scheduler.is_exhausted(ts)
 
             if sch.next_run is not None:
                 nexts[fupgen.id] = sch.next_run
 
-            update_recurconf.append(
-                (fupgen.id, is_exausted, sch.count, sch.last_run, sch.next_run)
+            update = (fupgen.id, is_exausted, sch.count, sch.last_run, sch.next_run)
+            self.logger.debug(
+                f"""
+                FupGen "{fupgen.id}" update set: 
+                is_exhausted:"{is_exausted}", count:"{sch.count}", 
+                last_run: "{sch.last_run}", next_run: "{sch.next_run}"
+                """
             )
+            update_recurconf.append(update)
 
         # TODO logica aqui para salvar ou nao
         self.fuprepo.add(fups)
@@ -55,10 +70,7 @@ class RunTask(UseCase):
         # TODO faz asyncio
         # asyncio.create_task(self.sendgateway.send(fups))
 
-        if nexts:
-            next = min(nexts.values())
-        else:
-            next_delta = min([fupg.default_cycle for fupg in fupgens])
-            next = ts + next_delta
+        next = min(nexts.values(), default=None)
 
+        self.logger.info(f'Next Task for "{ownerid}" scheduled for {next}')
         return next

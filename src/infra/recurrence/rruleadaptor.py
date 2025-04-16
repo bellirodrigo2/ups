@@ -2,15 +2,27 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Sequence
 
-from dateutil.rrule import DAILY, FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, YEARLY
-from dateutil.rrule import rrule as RRuleType
+from dateutil.rrule import (
+    DAILY,
+    FR,
+    MO,
+    MONTHLY,
+    SA,
+    SU,
+    TH,
+    TU,
+    WE,
+    WEEKLY,
+    YEARLY,
+    rrule,
+)
 
 from domain.entity.recurrence import Recurrence, RecurrenceConfig
 
 
 @dataclass
 class RRuleRecurrence(Recurrence):
-    _rule: RRuleType
+    _rule: rrule
 
     def take(self, n: int) -> Sequence[datetime]:
         return [dt for _, dt in zip(range(n), self._rule)]
@@ -33,7 +45,7 @@ def rrule_factory(config: RecurrenceConfig) -> Recurrence:
     }
     WEEKDAYS = {"MO": MO, "TU": TU, "WE": WE, "TH": TH, "FR": FR, "SA": SA, "SU": SU}
 
-    rule = RRuleType(
+    rule = rrule(
         freq=freq_map[config.freq],
         dtstart=config.dtstart,
         interval=config.interval,

@@ -53,7 +53,6 @@ def populated_session(session: Session) -> Generator[Session, None, None]:
         ownerid="owner1",
         name="Test FupGen",
         description="Some test description",
-        default_cycle=24,
         recurrence=rec,
         message_id=msg.id,
         data_id=data.id,

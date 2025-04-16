@@ -78,13 +78,13 @@ async def test_task_returns_none_and_stops():
     async def task_that_stops(task_id: str) -> Optional[datetime]:
         return None  # Finaliza após uma execução
 
-    run_at = datetime.now() + timedelta(milliseconds=200)
+    run_at = datetime.now() + timedelta(milliseconds=100)
     scheduler.add_task("task_stop", task_that_stops, next_run=run_at)
 
     await asyncio.sleep(0.3)
 
     # A task foi executada e removida sozinha
     assert not scheduler.is_running("task_stop")
-    assert "task_stop" in scheduler.tasks  # Ainda existe no dicionário, mas não ativa
+    assert "task_stop" not in scheduler.tasks
 
     scheduler.remove_task("task_stop")  # Garantia de limpeza

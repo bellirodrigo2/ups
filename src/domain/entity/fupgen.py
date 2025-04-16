@@ -13,7 +13,6 @@ class FupGenBase(BaseModel):
     name: str
     channel: list[Channel]
     description: str | None = None
-    default_cycle: timedelta
 
 
 class FupGenInput(FupGenBase):

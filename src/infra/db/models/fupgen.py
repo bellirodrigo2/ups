@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from infra.db.models.base import Base, CreatedAt
-from infra.db.models.channel import Channel
+from infra.db.models.channel import ChannelDB
 from infra.db.models.data import Data
 from infra.db.models.msg import Message
 from infra.db.models.recurrenceconfig import Recurrence
@@ -26,7 +26,7 @@ class FupGen(Base, CreatedAt):
         passive_deletes=True,
     )
 
-    channels: Mapped[List["Channel"]] = relationship(
+    channels: Mapped[List["ChannelDB"]] = relationship(
         back_populates="fupgen", cascade="all, delete-orphan"
     )
 
@@ -35,6 +35,9 @@ class FupGen(Base, CreatedAt):
 
     data_id: Mapped[str] = mapped_column(ForeignKey("fupgen_data.id"), unique=True)
     data: Mapped["Data"] = relationship(back_populates="fupgen", uselist=False)
+
+    def __str__(self) -> str:
+        return f"FupGen(id={self.id}, ownerid={self.ownerid}, name={self.name}, recurrence:{self.recurrence})"
 
 
 # new_msg = Message(id=str(uuid4()), content="nova mensagem")

@@ -2,12 +2,11 @@ from datetime import datetime
 from typing import Any, Generator
 
 import pytest
-from sqlalchemy import text
 from sqlalchemy.orm import Session, sessionmaker
 
 from infra.db.db import get_db, make_session
 from infra.db.models.base import Base
-from infra.db.models.channel import Channel
+from infra.db.models.channel import ChannelDB
 from infra.db.models.data import Data
 from infra.db.models.fupgen import FupGen
 from infra.db.models.msg import Message
@@ -59,7 +58,7 @@ def populated_session(session: Session) -> Generator[Session, None, None]:
     )
     session.add(fup)
 
-    ch = Channel(
+    ch = ChannelDB(
         id="ch1",
         fupgen_id=fup.id,
         type="email",

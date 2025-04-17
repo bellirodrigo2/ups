@@ -1,20 +1,38 @@
-from dataclasses import dataclass
-from typing import Callable
+import logging
+from dataclasses import dataclass, field
+from logging import Logger
+from typing import Any
 
 from app.repository.fupgenrepo import FupGenRepository
+from app.usecase.task.runtask import RunTask
 from app.usecase.usecase import UseCase
-from domain.entity.fupgen import FupGenInput, FupGenOutput
+from domain.entity.fupgen import FupGenInput
+from infra.scheduler.interface import ITaskScheduler
 
 
 @dataclass
 class CreateFupGenerator(UseCase):
-    fup_gen_repo: FupGenRepository
-    makeid: Callable[[], str]
+    fupgenrepo: FupGenRepository
+    scheduler: ITaskScheduler
+    runtask: RunTask
 
-    def execute(self, fupgen: FupGenInput) -> FupGenOutput:
+    logger: Logger = field(default_factory=logging.getLogger)
 
-        id = self.makeid()
+    async def execute(self, fupgen: FupGenInput) -> None:
 
-        created_at = self.fup_gen_repo.create(id, fupgen)
+        next_run = self.fupgenrepo.create(fupgen)
 
-        return FupGenOutput(id=id, created_at=created_at)
+        ownerid = fupgen.ownerid
+
+        is_active = await self.scheduler.is_active(ownerid)
+
+        if is_active:
+            self.logger.info(f'Task "{ownerid}" alredy scheduled')
+            return
+        if next_run is None:
+            self.logger.info(f"Next Run for '{ownerid}' has None as next_run")
+            return
+
+        await self.scheduler.schedule(self.runtask.execute, ownerid, next_run)
+
+        self.logger.info(f"[{ownerid}] Task added to the scheduler.")

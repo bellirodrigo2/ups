@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
+from uuid import uuid4
 
 import pytest
 
@@ -18,7 +19,11 @@ async def test_run_task_executes_correctly(populated_session: Session):
     fuprepo = MagicMock()
     sendgateway = AsyncMock()
 
-    fupgenrepo = FupGenRepository(db=populated_session, make_recurrence=rrule_factory)
+    fupgenrepo = FupGenRepository(
+        db=populated_session,
+        make_recurrence=rrule_factory,
+        make_id=lambda: str(uuid4()),
+    )
 
     # populated_session.query()
     # query(FupGen).filter_by(id=fupgen_id).one()

@@ -8,7 +8,7 @@ from infra.db.models.base import Base, CreatedAt, json_column
 # from infra.db.models.fupgen import FupGen
 
 
-class Channel(Base, CreatedAt):
+class ChannelDB(Base, CreatedAt):
     __tablename__ = "channel"
 
     id: Mapped[str] = mapped_column(primary_key=True)

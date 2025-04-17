@@ -25,3 +25,13 @@ class Recurrence(Base):
     past_events: Mapped[str] = mapped_column(default="lastonly")
 
     fupgen: Mapped["FupGen"] = relationship(back_populates="recurrence", uselist=False)
+
+    def __str__(self) -> str:
+        return (
+            f"Recurrence(id={self.id}, freq={self.freq}, dtstart={self.dtstart}, "
+            f"interval={self.interval}, count={self.count}, until={self.until}, "
+            f"byweekday={self.byweekday}, bymonthday={self.bymonthday}, "
+            f"allow_infinite={self.allow_infinite}, last_run={self.last_run}, "
+            f"next_run={self.next_run}, is_exhausted={self.is_exhausted}, "
+            f"past_events={self.past_events})"
+        )

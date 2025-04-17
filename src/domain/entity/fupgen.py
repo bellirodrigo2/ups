@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import Any
 
 from pydantic import BaseModel
@@ -16,7 +15,7 @@ class FupGenBase(BaseModel):
 
 
 class FupGenInput(FupGenBase):
-    recurcoinfig: RecurrenceConfig
+    recurconfig: RecurrenceConfig
     msg: str  # | Callable[[dict[str, Any]], str]
     data: dict[str, Any] = {}
 

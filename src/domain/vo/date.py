@@ -1,4 +1,6 @@
 import inspect
+import warnings
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Protocol, Tuple, Union, runtime_checkable
 
@@ -51,313 +53,228 @@ class Itimedelta(Protocol):
     def __reduce__(self) -> Tuple[Any, ...]: ...
 
 
+from datetime import datetime, timedelta
+from typing import Any, Protocol, Tuple, Union, runtime_checkable
+
+from dateutil.relativedelta import relativedelta
+
+
+def timedelta_ext(
+    days: int = 0,
+    seconds: int = 0,
+    microseconds: int = 0,
+    months: int = 0,
+    years: int = 0,
+) -> Itimedelta:
+    td = timedelta(days=days, seconds=seconds, microseconds=microseconds)
+    rd = relativedelta(months=months, years=years)
+    return Flextimedelta(_td=td, _rd=rd)
+
+
+@dataclass
 class Flextimedelta(Itimedelta):
-    def __init__(
-        self,
-        days: int = 0,
-        seconds: int = 0,
-        microseconds: int = 0,
-        months: int = 0,
-        years: int = 0,
-        **kwargs: Any,
-    ) -> None:
-        # Interno: usa timedelta para dias/segundos/microseconds
-        self._timedelta = timedelta(
-            days=days, seconds=seconds, microseconds=microseconds, **kwargs
-        )
-        self.months = months
-        self.years = years
+    _td: timedelta
+    _rd: relativedelta
 
-    def __repr__(self) -> str:
-        return (
-            f"Flextimedelta(days={self._timedelta.days}, seconds={self._timedelta.seconds}, "
-            f"microseconds={self._timedelta.microseconds}, months={self.months}, years={self.years})"
-        )
+    @property
+    def days(self):
+        return self._td.days
 
-    def __str__(self) -> str:
-        return f"Flextimedelta({self._timedelta}, months={self.months}, years={self.years})"
+    @property
+    def seconds(self):
+        return self._td.seconds
+
+    @property
+    def microseconds(self):
+        return self._td.microseconds
+
+    @property
+    def months(self):
+        return self._rd.months
+
+    @property
+    def years(self):
+        return self._rd.years
+
+    @property
+    def _timedelta(self):
+        return self._td
+
+    def total_seconds(self) -> float:
+        if self.months == 0 and self.years == 0:
+            return self._td.total_seconds()
+        estimated_days = (self.years * 365) + (self.months * 30.5)
+        warnings.warn(
+            "Calculating total_seconds approximately. Months are considered as 30.5 days and years as 365 days.",
+            UserWarning,
+        )
+        return self._td.total_seconds() + estimated_days * 86400
 
     def __add__(
-        self,
-        other: Union[datetime, timedelta, "Flextimedelta"],
-    ) -> Union[datetime, timedelta, "Flextimedelta"]:
-        # Flextimedelta + Flextimedelta
-        if isinstance(other, Flextimedelta):
-            return Flextimedelta(
-                days=self._timedelta.days + other._timedelta.days,
-                seconds=self._timedelta.seconds + other._timedelta.seconds,
-                microseconds=self._timedelta.microseconds
-                + other._timedelta.microseconds,
-                months=self.months + other.months,
-                years=self.years + other.years,
-            )
-        # Flextimedelta + datetime
+        self, other: datetime | Itimedelta | timedelta
+    ) -> datetime | "Flextimedelta":
         if isinstance(other, datetime):
-            delta = relativedelta(years=self.years, months=self.months)
-            return other + delta + self._timedelta
-        # Flextimedelta + timedelta
-        if isinstance(other, timedelta):
-            td = self._timedelta + other
+            return other + self._td + self._rd
+        if isinstance(other, Itimedelta):
             return Flextimedelta(
-                days=td.days,
-                seconds=td.seconds,
-                microseconds=td.microseconds,
-                months=self.months,
-                years=self.years,
+                _td=self._td + other._td,  # Soma as partes timedelta
+                _rd=self._rd + other._rd,  # Soma as partes relativedelta
             )
+        if isinstance(other, timedelta):
+            return Flextimedelta(
+                _td=self._td + other,  # Soma apenas a parte de timedelta
+                _rd=self._rd,  # Mantém a parte de relativedelta inalterada
+            )
+
         return NotImplemented
 
     def __radd__(
-        self,
-        other: Union[datetime, timedelta],
-    ) -> Union[datetime, timedelta]:
-        return self.__add__(other)
+        self, other: datetime | Itimedelta | timedelta
+    ) -> datetime | "Flextimedelta":
+        return self + other
 
-    def __sub__(
-        self,
-        other: Union[datetime, timedelta, "Flextimedelta"],
-    ) -> Union[datetime, timedelta, "Flextimedelta"]:
-        # Flextimedelta - Flextimedelta
+    def __sub__(self, other):
         if isinstance(other, Flextimedelta):
-            return Flextimedelta(
-                days=self._timedelta.days - other._timedelta.days,
-                seconds=self._timedelta.seconds - other._timedelta.seconds,
-                microseconds=self._timedelta.microseconds
-                - other._timedelta.microseconds,
-                months=self.months - other.months,
-                years=self.years - other.years,
-            )
-        # datetime - Flextimedelta
-        if isinstance(other, datetime):
-            delta = relativedelta(years=self.years, months=self.months)
-            return other - delta - self._timedelta
-        # Flextimedelta - timedelta
-        if isinstance(other, timedelta):
-            td = self._timedelta - other
-            return Flextimedelta(
-                days=td.days,
-                seconds=td.seconds,
-                microseconds=td.microseconds,
-                months=self.months,
-                years=self.years,
-            )
-        return NotImplemented
-
-    def __rsub__(
-        self,
-        other: Union[datetime, timedelta],
-    ) -> Union[datetime, timedelta]:
-        # datetime - Flextimedelta
-        if isinstance(other, datetime):
-            return self.__sub__(other)
-        # timedelta - Flextimedelta
-        if isinstance(other, timedelta):
-            td = other - self._timedelta
-            return Flextimedelta(
-                days=td.days,
-                seconds=td.seconds,
-                microseconds=td.microseconds,
-                months=-self.months,
-                years=-self.years,
-            )
-        return NotImplemented
-
-    def __neg__(self) -> "Flextimedelta":
-        return Flextimedelta(
-            days=-self._timedelta.days,
-            seconds=-self._timedelta.seconds,
-            microseconds=-self._timedelta.microseconds,
-            months=-self.months,
-            years=-self.years,
-        )
-
-    def __pos__(self) -> "Flextimedelta":
-        return self
-
-    def __abs__(self) -> "Flextimedelta":
-        return Flextimedelta(
-            days=abs(self._timedelta.days),
-            seconds=abs(self._timedelta.seconds),
-            microseconds=abs(self._timedelta.microseconds),
-            months=abs(self.months),
-            years=abs(self.years),
-        )
-
-    def __mul__(
-        self,
-        other: Union[int, float],
-    ) -> "Flextimedelta":
-        return Flextimedelta(
-            days=self._timedelta.days * other,
-            seconds=self._timedelta.seconds * other,
-            microseconds=self._timedelta.microseconds * other,
-            months=self.months * other,
-            years=self.years * other,
-        )
-
-    __rmul__ = __mul__
-
-    def __floordiv__(
-        self,
-        other: Union[int, "Flextimedelta"],
-    ) -> Union[int, "Flextimedelta"]:
-        if isinstance(other, Flextimedelta):
-            return self.days // other.days
-        if isinstance(other, int):
-            return Flextimedelta(
-                days=self._timedelta.days // other,
-                seconds=self._timedelta.seconds // other,
-                microseconds=self._timedelta.microseconds // other,
-                months=self.months // other,
-                years=self.years // other,
-            )
-        return NotImplemented
-
-    def __truediv__(
-        self,
-        other: Union[int, float, "Flextimedelta"],
-    ) -> Union[float, "Flextimedelta"]:
-        if isinstance(other, Flextimedelta):
-            return self.total_seconds() / other.total_seconds()
-        if isinstance(other, (int, float)):
-            return Flextimedelta(
-                days=self._timedelta.days / other,
-                seconds=self._timedelta.seconds / other,
-                microseconds=self._timedelta.microseconds / other,
-                months=self.months / other,
-                years=self.years / other,
-            )
-        return NotImplemented
-
-    def __mod__(
-        self,
-        other: Union["Flextimedelta", int],
-    ) -> int:
-        if isinstance(other, Flextimedelta):
-            return self.days % other.days
-        if isinstance(other, int):
-            return self.days % other
-        return NotImplemented
-
-    def __divmod__(self, other: "Flextimedelta") -> Tuple[int, "Flextimedelta"]:
-        if isinstance(other, Flextimedelta):
-            q = int(self.total_seconds() // other.total_seconds())
-            r_secs = self.total_seconds() % other.total_seconds()
-            r = Flextimedelta(seconds=r_secs)
-            return q, r
-        return NotImplemented
-
-    def __eq__(
-        self,
-        other: object,
-    ) -> bool:
-        if not isinstance(other, Flextimedelta):
-            return False
-        return (
-            self._timedelta == other._timedelta
-            and self.months == other.months
-            and self.years == other.years
-        )
-
-    def __ne__(
-        self,
-        other: object,
-    ) -> bool:
-        return not self == other
-
-    def __lt__(self, other: Union["Flextimedelta", timedelta]) -> bool:
-        if isinstance(other, Flextimedelta):
-            return self.total_seconds() < other.total_seconds()
+            new_td = self._td - other._td
+            new_rd = self._rd - other._rd
+            return Flextimedelta(_td=new_td, _rd=new_rd)
+        elif isinstance(other, datetime):
+            return other - self._td - self._rd
         elif isinstance(other, timedelta):
-            # If the other object is a timedelta, compare it using total_seconds
-            return self.total_seconds() < other.total_seconds()
+            new_td = self._td - other
+            return Flextimedelta(_td=new_td, _rd=self._rd)
+        elif isinstance(other, Itimedelta):
+            new_td = self._td - other._td
+            new_rd = self._rd - other._rd
+            return Flextimedelta(_td=new_td, _rd=new_rd)
+
         return NotImplemented
 
-    def __le__(
-        self,
-        other: Union["Flextimedelta", timedelta],
-    ) -> bool:
-        return self.total_seconds() <= other.total_seconds()
+    def __rsub__(self, other: datetime | Itimedelta | timedelta):
+        return -(self - other)
 
-    def __gt__(
-        self,
-        other: Union["Flextimedelta", timedelta],
-    ) -> bool:
-        return self.total_seconds() > other.total_seconds()
+    # def __sub__(self, other):
+    #     if isinstance(other, datetime):
+    #         return other - self._rd - self._td
+    #     if isinstance(other, timedelta):
+    #         return Flextimedelta.from_parts(self._td - other, self._rd)
+    #     if isinstance(other, Flextimedelta):
+    #         return Flextimedelta.from_parts(self._td - other._td, self._rd - other._rd)
+    #     return NotImplemented
 
-    def __ge__(
-        self,
-        other: Union["Flextimedelta", timedelta],
-    ) -> bool:
-        return self.total_seconds() >= other.total_seconds()
+    # def __rsub__(self, other):
+    #     if isinstance(other, datetime):
+    #         return other - self._rd - self._td
+    #     if isinstance(other, timedelta):
+    #         return Flextimedelta.from_parts(other - self._td, -self._rd)
+    #     return NotImplemented
 
-    def total_seconds(self) -> float:
-        base_seconds = self._timedelta.total_seconds()
-        additional_seconds = (self.years * 365.25 + self.months * 30.44) * 86400
-        return base_seconds + additional_seconds
+    # def __neg__(self):
+    #     return Flextimedelta.from_parts(-self._td, -self._rd)
 
-    def to_relativedelta(self) -> relativedelta:
-        return relativedelta(
-            years=self.years,
-            months=self.months,
-            days=self._timedelta.days,
-            seconds=self._timedelta.seconds,
-            microseconds=self._timedelta.microseconds,
-        )
+    # def __pos__(self):
+    #     return self
 
-    @property
-    def days(self) -> int:
-        return self._timedelta.days
+    # def __abs__(self):
+    #     return Flextimedelta.from_parts(
+    #         abs(self._td),
+    #         relativedelta(years=abs(self._rd.years), months=abs(self._rd.months)),
+    #     )
 
-    @property
-    def seconds(self) -> int:
-        return self._timedelta.seconds
+    # def __mul__(self, other):
+    #     if not isinstance(other, (int, float)):
+    #         return NotImplemented
+    #     if isinstance(other, float) and not other.is_integer():
+    #         raise ValueError(
+    #             "Multiplication of years/months with non-integer is ambiguous."
+    #         )
+    #     return Flextimedelta.from_parts(
+    #         self._td * other,
+    #         relativedelta(
+    #             years=int(self._rd.years * other), months=int(self._rd.months * other)
+    #         ),
+    #     )
 
-    @property
-    def microseconds(self) -> int:
-        return self._timedelta.microseconds
+    # __rmul__ = __mul__
 
-    def __hash__(self) -> int:
-        return hash(
-            (
-                self.days,
-                self.seconds,
-                self.microseconds,
-                self.months,
-                self.years,
-            )
-        )
+    # def __floordiv__(self, other):
+    #     if isinstance(other, (int, float)):
+    #         return Flextimedelta(seconds=self.total_seconds() // other)
+    #     elif isinstance(other, Flextimedelta):
+    #         return int(self.total_seconds() // other.total_seconds())
+    #     return NotImplemented
 
-    def __reduce__(self) -> Tuple[Any, ...]:
-        return (
-            self.__class__,
-            (self.days, self.seconds, self.microseconds, self.months, self.years),
-        )
+    # def __truediv__(self, other):
+    #     if isinstance(other, (int, float)):
+    #         return Flextimedelta(seconds=self.total_seconds() / other)
+    #     elif isinstance(other, Flextimedelta):
+    #         return self.total_seconds() / other.total_seconds()
+    #     return NotImplemented
 
-    def __bool__(self) -> bool:
-        return bool(self._timedelta) or self.months != 0 or self.years != 0
+    # def __mod__(self, other):
+    #     if isinstance(other, int):
+    #         return Flextimedelta(seconds=self.total_seconds() % other)
+    #     elif isinstance(other, Flextimedelta):
+    #         return Flextimedelta(seconds=self.total_seconds() % other.total_seconds())
+    #     return NotImplemented
 
+    # def __divmod__(self, other):
+    #     if isinstance(other, Flextimedelta):
+    #         q = int(self.total_seconds() // other.total_seconds())
+    #         r_secs = self.total_seconds() % other.total_seconds()
+    #         return q, Flextimedelta(seconds=r_secs)
+    #     return NotImplemented
 
-def _make_timedelta(v: int) -> Itimedelta:
-    caller = inspect.stack()[1].function
-    return Flextimedelta(**{caller: v})
+    # def __eq__(self, other):
+    #     return (
+    #         isinstance(other, Flextimedelta)
+    #         and self._td == other._td
+    #         and self._rd == other._rd
+    #     )
 
+    # def __lt__(self, other):
+    #     return self.total_seconds() < other.total_seconds()
 
-def days(v: int) -> Itimedelta:
-    return _make_timedelta(v)
+    # def __le__(self, other):
+    #     return self.total_seconds() <= other.total_seconds()
 
+    # def __gt__(self, other):
+    #     return self.total_seconds() > other.total_seconds()
 
-def minutes(v: int) -> Itimedelta:
-    return _make_timedelta(v)
+    # def __ge__(self, other):
+    #     return self.total_seconds() >= other.total_seconds()
 
+    # def __hash__(self):
+    #     return hash(
+    #         (self.days, self.seconds, self.microseconds, self.months, self.years)
+    #     )
 
-def hours(v: int) -> Itimedelta:
-    return _make_timedelta(v)
+    # def __bool__(self):
+    #     return bool(self._td) or bool(self._rd)
 
+    # def __reduce__(self):
+    #     return (
+    #         self.__class__,
+    #         (self.days, self.seconds, self.microseconds, self.months, self.years),
+    #     )
 
-def months(v: int) -> Itimedelta:
-    return _make_timedelta(v)
+    # def __repr__(self):
+    #     return (
+    #         f"Flextimedelta(days={self.days}, seconds={self.seconds}, microseconds={self.microseconds}, "
+    #         f"months={self.months}, years={self.years})"
+    #     )
 
+    # __str__ = __repr__
 
-def years(v: int) -> Itimedelta:
-    return _make_timedelta(v)
+    # def to_relativedelta(self) -> relativedelta:
+    #     return relativedelta(
+    #         years=self._rd.years,
+    #         months=self._rd.months,
+    #         days=self._td.days,
+    #         seconds=self._td.seconds,
+    #         microseconds=self._td.microseconds,
+    #     )
+
+    # @classmethod
+    # def from_parts(cls, td: timedelta, rd: relativedelta) -> "Flextimedelta":
+    #     return cls(td.days, td.seconds, td.microseconds, rd.months, rd.years)

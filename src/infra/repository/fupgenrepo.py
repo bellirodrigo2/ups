@@ -129,14 +129,12 @@ class FupGenRepository(IFupGenRepository):
 
         return sch.config.next_run
 
-    def get_fupgen(self, ownerid: str, active: bool) -> list[FollowupGenerator]:
+    def get_fupgen(self, ownerid: str, active_only: bool) -> list[FollowupGenerator]:
 
         query = self.db.query(FupGen).join(Recurrence).filter(FupGen.ownerid == ownerid)
 
-        if active:
+        if active_only:
             query = query.filter(Recurrence.is_exhausted == False)
-        else:
-            query = query.filter(Recurrence.is_exhausted == True)
 
         fupgens: List[FupGen] = query.all()
 
@@ -160,3 +158,11 @@ class FupGenRepository(IFupGenRepository):
                 fupgen.recurrence.next_run = next_run
 
         self.db.commit()
+
+    def update_exhaust_rule(
+        self, fupgen_id: str, add_count: int | None, until: datetime | None
+    ) -> None:
+        # criar o scheduler...e atualizar next_run, is_exhausted
+        ...
+
+    def delete_fupgen(self, fupgen_id: str) -> None: ...

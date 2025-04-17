@@ -22,7 +22,7 @@ class RunTask(UseCase):
     async def execute(self, ownerid: str, ts: datetime | None) -> datetime | None:
 
         fupgens: list[FollowupGenerator] = self.fupgenrepo.get_fupgen(
-            ownerid=ownerid, active=True
+            ownerid=ownerid, active_only=True
         )
         self.logger.info(f'FupGen query for "{ownerid}" returned {len(fupgens)} items')
         self.logger.debug(str(fupgens))

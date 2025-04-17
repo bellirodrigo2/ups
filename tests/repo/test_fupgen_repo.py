@@ -120,7 +120,7 @@ def test_create_multiple_channels(repo: FupGenRepository):
 
 def test_get_fupgen_active(repo: FupGenRepository):
 
-    result = repo.get_fupgen(ownerid="owner1", active=True)
+    result = repo.get_fupgen(ownerid="owner1", active_only=True)
 
     assert len(result) == 1
     fup = result[0]
@@ -132,7 +132,7 @@ def test_get_fupgen_active(repo: FupGenRepository):
 
 def test_get_fupgen_active_no_owner(repo: FupGenRepository):
 
-    result = repo.get_fupgen(ownerid="noowner", active=True)
+    result = repo.get_fupgen(ownerid="noowner", active_only=True)
     assert result == []
 
 

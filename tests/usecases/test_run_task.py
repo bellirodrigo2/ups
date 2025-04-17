@@ -25,10 +25,6 @@ async def test_run_task_executes_correctly(populated_session: Session):
         make_id=lambda: str(uuid4()),
     )
 
-    # populated_session.query()
-    # query(FupGen).filter_by(id=fupgen_id).one()
-
-    # UseCase
     task = RunTask(
         fupgenrepo=fupgenrepo,
         fuprepo=fuprepo,

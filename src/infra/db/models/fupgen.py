@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from infra.db.models.base import Base, CreatedAt
@@ -36,11 +36,7 @@ class FupGen(Base, CreatedAt):
     data_id: Mapped[str] = mapped_column(ForeignKey("fupgen_data.id"), unique=True)
     data: Mapped["Data"] = relationship(back_populates="fupgen", uselist=False)
 
+    __table_args__ = (UniqueConstraint("ownerid", "name", name="uq_owner_name"),)
+
     def __str__(self) -> str:
         return f"FupGen(id={self.id}, ownerid={self.ownerid}, name={self.name}, recurrence:{self.recurrence})"
-
-
-# new_msg = Message(id=str(uuid4()), content="nova mensagem")
-# session.add(new_msg)
-
-# fupgen.message = new_msg
